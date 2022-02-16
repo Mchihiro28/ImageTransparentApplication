@@ -12,6 +12,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -22,52 +23,63 @@ import android.provider.MediaStore;
 import android.util.Size;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-
-    ImageView imageView ;
-    ImageView imageView1;
+    ImageView imageView;
+    SeekBar seekBar;
     BitmapIO bitIO = new BitmapIO();
-    int isImported = 0; //importButtonのフラグ
-    Bitmap mutableBitmap;
+    int imageWidth; //画像の幅
+    int imageHeight; //画像の高さ
+    int[] pixels;
+    int tv = 80; //二値化の閾値
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_synthetic);
-        imageView = findViewById(R.id.imageView3);
-        imageView1 = findViewById(R.id.image1);
+        setContentView(R.layout.activity_main);
+        seekBar = findViewById(R.id.seekBar);
+        imageView = findViewById(R.id.imageView2);
 
         bitIO.setBitmap(((BitmapDrawable)imageView.getDrawable()).getBitmap());
 
-    }
+        // 初期値
+        seekBar.setProgress(30);
+        // 最大値
+        seekBar.setMax(130);
+        seekBar.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+                    //ツマミがドラッグされると呼ばれる
+                    @Override
+                    public void onProgressChanged(
+                            SeekBar seekBar, int progress, boolean fromUser) {
+                        tv = progress;
+                    }
 
-    public void BackButton(View v){
-        finish();
+                    //ツマミがタッチされた時に呼ばれる
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
+
+                    //ツマミがリリースされた時に呼ばれる
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                    }
+
+                });
     }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
-    public void saveButton(View v){
-        final String[] items = {"JPEG", "PNG"};
-        new AlertDialog.Builder(this)
-                .setTitle("保存する画像のタイプを選択してください")
-                .setItems(items, (dialog, which) -> {
-                    // item_which pressed
-                    if(which == 0){
-                        bitIO.setType(true);
-                        createFile();
-                    }else{
-                        bitIO.setType(false);
-                        createFile();
-                    }
-                })
-                .show();
+    public void  saveButton(View v){
+        bitIO.setType(false);
+        createFile();
     }
 
     public void createFile() {
@@ -99,9 +111,9 @@ public class MainActivity extends AppCompatActivity {
                                     getContentResolver().openOutputStream(uri)) {
                             if(outputStream != null){
                                 if(bitIO.isType()){
-                                    bitIO.convertJPEG(mutableBitmap, outputStream);
+                                    bitIO.convertJPEG(bitIO.getBitmap(), outputStream);
                                 }else{
-                                    bitIO.convertPNG(mutableBitmap, outputStream);
+                                    bitIO.convertPNG(bitIO.getBitmap(), outputStream);
                                 }
                             }
 
@@ -124,14 +136,10 @@ public class MainActivity extends AppCompatActivity {
                             bitIO.setBitmap(bitmap);
                             //ここにデータが保存される
 
-                            if(isImported == 0){
-                                imageView.setImageBitmap(bitIO.getBitmap());
-                                isImported = 1;
-                            }else if(isImported == 1){
-                                imageView1.setImageBitmap(bitIO.getBitmap());
-                                imageView1.setVisibility(View.VISIBLE);
-                                isImported = 2;
-                            }
+                            imageView.setImageBitmap(bitIO.getBitmap());
+                            imageWidth = bitIO.getBitmap().getWidth();
+                            imageHeight = bitIO.getBitmap().getHeight();
+                            pixels = new int[imageWidth * imageHeight];
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -153,23 +161,49 @@ public class MainActivity extends AppCompatActivity {
         getImage();
     }
 
-    public void syntheticImages(){ //画像を合成するメソッド
-        if(isImported == 2) {
-            mutableBitmap = bitIO.getBitmap().copy(Bitmap.Config.ARGB_8888, true);
-            Canvas offScreen = new Canvas(mutableBitmap);
-            Bitmap bitmap1 = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-            Bitmap bitmap2 = ((BitmapDrawable) imageView1.getDrawable()).getBitmap();
-            offScreen.drawBitmap(bitmap1, imageView.getImageMatrix(), null);
-            offScreen.drawBitmap(bitmap2, imageView1.getImageMatrix(), null);
-            bitIO.setBitmap(mutableBitmap);
-        }else{
-            Toast toast = Toast.makeText(this, "2枚の画像をインポートしてください", Toast.LENGTH_LONG);
-            toast.show();
+    public void TPButton(View v){ //透過するボタン
+
+        int backColor = bitIO.getBitmap().getPixel(0,0); //0,0の背景色
+        int WR = (backColor >> 16) & 0xff;
+        int WG = (backColor >> 8) & 0xff;
+        int WB = backColor & 0xff;  //消えやすくなる色を決めるためのウェイト
+        int tmp = Math.max(WB ,Math.max(WR ,WG));
+        if(tmp == WR && tmp == WB && tmp == WG){
+            WR = 1;
+            WB = 1;
+            WG = 1;
         }
-    }
+        else if(tmp == WR){
+            WR = 1;
+            WB = 0;
+            WG = 0;
+        }else if(tmp == WB){
+            WB = 1;
+            WR = 0;
+            WG = 0;
+        }else{
+            WG = 1;
+            WR = 0;
+            WB = 0;
+        }
 
-    public void SynthButton(View v){
-        syntheticImages();
+        Bitmap bitmap = Bitmap.createBitmap(imageWidth,imageHeight,Bitmap.Config.ARGB_8888 );
+        bitIO.getBitmap().getPixels(pixels, 0, imageWidth, 0, 0, imageWidth, imageHeight); //ArrayIndexOutBoundが出る
+        for (int y = 0; y < imageHeight; y++) {
+            for (int x = 0; x < imageWidth; x++) {
+                int p = pixels[x + y * imageWidth];
+                int R = (p >> 16) & 0xff;
+                int G = (p >> 8) & 0xff;
+                int B = p & 0xff;
+                int newcolor = (R*WR+G*WG+B*WB)/3;
+                if( tv < newcolor) {
+                    pixels[x + y * imageWidth] = 0;
+                }
+            }
+        }
+        bitmap.eraseColor(Color.argb(0, 0, 0, 0));
+        bitmap.setPixels(pixels, 0, imageWidth, 0, 0, imageWidth, imageHeight);
+        bitIO.setBitmap(bitmap);
+        imageView.setImageBitmap(bitmap);
     }
-
 }
