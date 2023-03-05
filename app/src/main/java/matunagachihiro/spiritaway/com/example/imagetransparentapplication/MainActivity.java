@@ -26,6 +26,10 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -74,6 +78,14 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 });
+
+        MobileAds.initialize(this,
+                initializationStatus -> {
+                });
+
+        AdView adView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
@@ -188,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Bitmap bitmap = Bitmap.createBitmap(imageWidth,imageHeight,Bitmap.Config.ARGB_8888 );
-        bitIO.getBitmap().getPixels(pixels, 0, imageWidth, 0, 0, imageWidth, imageHeight); //ArrayIndexOutBoundが出る
+        bitIO.getBitmap().getPixels(pixels, 0, imageWidth, 0, 0, imageWidth, imageHeight);
         for (int y = 0; y < imageHeight; y++) {
             for (int x = 0; x < imageWidth; x++) {
                 int p = pixels[x + y * imageWidth];
@@ -205,5 +217,10 @@ public class MainActivity extends AppCompatActivity {
         bitmap.setPixels(pixels, 0, imageWidth, 0, 0, imageWidth, imageHeight);
         bitIO.setBitmap(bitmap);
         imageView.setImageBitmap(bitmap);
+    }
+
+    public void goPrivacyActivity (View v){
+        Intent intent = new Intent(this,PrivacyActivity.class);
+        startActivity(intent);
     }
 }

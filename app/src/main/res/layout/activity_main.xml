@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     tools:context=".MainActivity">
 
     <ImageButton
@@ -46,7 +47,7 @@
         android:id="@+id/TPButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="36dp"
+        android:layout_marginBottom="50dp"
         android:backgroundTint="#9F9E9E"
         android:onClick="TPButton"
         android:textColor="@color/black"
@@ -64,4 +65,29 @@
         app:layout_constraintBottom_toTopOf="@+id/TPButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/privacyButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#A8A8A8"
+        android:onClick="goPrivacyActivity"
+        android:text="privacypolicy"
+        android:textSize="10sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:layout_constraintStart_toStartOf="parent" />
+    <!-- ca-app-pub-3940256099942544/6300978111はテスト用ID、
+            リリース前に本番用IDに取り替える　-->
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

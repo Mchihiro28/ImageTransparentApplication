@@ -10,6 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ImageTransparentApplication">
         <activity
+            android:name=".PrivacyActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -18,6 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-2742833893230662~2934624219"/>
     </application>
 
 </manifest>
