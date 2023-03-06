@@ -2,6 +2,7 @@ package matunagachihiro.spiritaway.com.example.imagetransparentapplication;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,7 +29,10 @@ import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     int imageHeight; //画像の高さ
     int[] pixels;
     int tv = 80; //二値化の閾値
+    InterstitialAd mInterstitialAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,21 +84,52 @@ public class MainActivity extends AppCompatActivity {
 
                 });
 
+        //バナー広告表示
         MobileAds.initialize(this,
                 initializationStatus -> {
                 });
 
+        //AdRequest
         AdView adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
+
+
+        InterstitialAd.load(this,
+                "ca-app-pub-3940256099942544/1033173712", //<!>test用ID
+                adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        // The mInterstitialAd reference will be null until an ad is loaded.
+                        mInterstitialAd = interstitialAd;
+                        Toast.makeText(MainActivity.this,
+                                "onAdLoaded()", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        // Handle the error
+                        mInterstitialAd = null;
+                        Toast.makeText(MainActivity.this,
+                                "広告は読み込み中です。", Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    public void  saveButton(View v){
+    public void saveButton(View v){
         bitIO.setType(false);
         createFile();
     }
 
+    public void showInterstitial(){
+        if (mInterstitialAd != null) {
+            mInterstitialAd.show(MainActivity.this);
+        } else {
+            Toast.makeText(MainActivity.this,
+                    "広告の読み込みに失敗しました。", Toast.LENGTH_LONG).show();
+        }
+    }
     public void createFile() {
         String fileName;
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
@@ -217,6 +253,10 @@ public class MainActivity extends AppCompatActivity {
         bitmap.setPixels(pixels, 0, imageWidth, 0, 0, imageWidth, imageHeight);
         bitIO.setBitmap(bitmap);
         imageView.setImageBitmap(bitmap);
+
+
+        //インタースティシャル広告の表示
+        showInterstitial();
     }
 
     public void goPrivacyActivity (View v){
