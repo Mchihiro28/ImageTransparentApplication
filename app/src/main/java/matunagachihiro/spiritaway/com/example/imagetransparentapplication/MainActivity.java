@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         InterstitialAd.load(this,
-                "ca-app-pub-3940256099942544/1033173712", //<!>test用ID
+                "ca-app-pub-2742833893230662/3974111824",
                 adRequest,
                 new InterstitialAdLoadCallback() {
                     @Override
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                         // Handle the error
                         mInterstitialAd = null;
                         Toast.makeText(MainActivity.this,
-                                "広告は読み込み中です。", Toast.LENGTH_LONG).show();
+                                "広告を読み込み中です。", Toast.LENGTH_LONG).show();
                     }
                 });
     }
