@@ -11,7 +11,9 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     int[] pixels;
     int tv = 80; //二値化の閾値
     InterstitialAd mInterstitialAd;
+    AdRequest adRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,8 +94,13 @@ public class MainActivity extends AppCompatActivity {
 
         //AdRequest
         AdView adView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
+        adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
 
         InterstitialAd.load(this,
@@ -103,8 +111,6 @@ public class MainActivity extends AppCompatActivity {
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                         // The mInterstitialAd reference will be null until an ad is loaded.
                         mInterstitialAd = interstitialAd;
-                        Toast.makeText(MainActivity.this,
-                                "onAdLoaded()", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
@@ -119,7 +125,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void saveButton(View v){
         bitIO.setType(false);
+        bitIO.addAdCount();
         createFile();
+
+
+        //インタースティシャル広告の表示
+        if(bitIO.getAdcount()){
+        showInterstitial();
+        }
     }
 
     public void showInterstitial(){
@@ -183,11 +196,6 @@ public class MainActivity extends AppCompatActivity {
                             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                             bitIO.setBitmap(bitmap);
                             //ここにデータが保存される
-
-                            imageView.setImageBitmap(bitIO.getBitmap());
-                            imageWidth = bitIO.getBitmap().getWidth();
-                            imageHeight = bitIO.getBitmap().getHeight();
-                            pixels = new int[imageWidth * imageHeight];
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -210,6 +218,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void TPButton(View v){ //透過するボタン
+        imageView.setImageBitmap(bitIO.getBitmap());
+        imageWidth = bitIO.getBitmap().getWidth();
+        imageHeight = bitIO.getBitmap().getHeight();
+        pixels = new int[imageWidth * imageHeight];
 
         int backColor = bitIO.getBitmap().getPixel(0,0); //0,0の背景色
         int WR = (backColor >> 16) & 0xff;
@@ -253,10 +265,6 @@ public class MainActivity extends AppCompatActivity {
         bitmap.setPixels(pixels, 0, imageWidth, 0, 0, imageWidth, imageHeight);
         bitIO.setBitmap(bitmap);
         imageView.setImageBitmap(bitmap);
-
-
-        //インタースティシャル広告の表示
-        showInterstitial();
     }
 
     public void goPrivacyActivity (View v){
