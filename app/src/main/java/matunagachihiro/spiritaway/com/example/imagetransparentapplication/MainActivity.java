@@ -195,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                             bitIO.setBitmap(bitmap);
+                            imageView.setImageBitmap(bitmap);
                             //ここにデータが保存される
                         } catch (IOException e) {
                             e.printStackTrace();
