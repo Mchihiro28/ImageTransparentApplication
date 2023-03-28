@@ -7,10 +7,10 @@ android {
 
     defaultConfig {
         applicationId "matunagachihiro.spiritaway.com.example.imagetransparentapplication"
-        minSdk 29
+        minSdk 22
         targetSdk 31
-        versionCode 5
-        versionName '2.3'
+        versionCode 6
+        versionName '2.4'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
