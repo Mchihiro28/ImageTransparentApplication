@@ -3,14 +3,14 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "matunagachihiro.spiritaway.com.example.imagetransparentapplication"
         minSdk 22
-        targetSdk 31
-        versionCode 6
-        versionName '2.4'
+        targetSdk 33
+        versionCode 8
+        versionName '2.6'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

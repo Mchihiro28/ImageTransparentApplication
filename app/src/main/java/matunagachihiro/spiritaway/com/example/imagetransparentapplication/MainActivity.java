@@ -22,13 +22,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.util.Size;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.LoadAdError;
@@ -52,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     int tv = 80; //二値化の閾値
     InterstitialAd mInterstitialAd;
     AdRequest adRequest;
+    int reloadCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,20 +96,37 @@ public class MainActivity extends AppCompatActivity {
                 initializationStatus -> {
                 });
 
+        reloadCount = 0;
         //AdRequest
         AdView adView = findViewById(R.id.adView);
         adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                super.onAdFailedToLoad(loadAdError);
+                if(reloadCount < 5) {
+                    reloadCount++;
+                    Log.d("MYDEBUG","reloaded ad = " + reloadCount);
+                    new Handler().postDelayed((Runnable) () -> adView.loadAd(adRequest), 2000);
+                }
+            }
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
+        reloadCount = 0;
+        loadInterstitial(adRequest);
 
+    }
+
+    public void loadInterstitial(AdRequest adRe){
         InterstitialAd.load(this,
                 "ca-app-pub-2742833893230662/3974111824",
-                adRequest,
+                adRe,
                 new InterstitialAdLoadCallback() {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
@@ -117,11 +138,16 @@ public class MainActivity extends AppCompatActivity {
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         // Handle the error
                         mInterstitialAd = null;
+                        Log.d("MYDEBUG","reloaded ad = " + reloadCount);
                         Toast.makeText(MainActivity.this,
-                                "広告を読み込み中です。", Toast.LENGTH_LONG).show();
+                                "広告を読み込み中です。　" + loadAdError.getCode(), Toast.LENGTH_LONG).show();
+                        if(reloadCount < 5) {
+                            loadInterstitial(adRe);
+                        }
                     }
                 });
     }
+
 
     public void saveButton(View v){
         bitIO.setType(false);
