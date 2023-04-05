@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this,
                                 "広告を読み込み中です。　" + loadAdError.getCode(), Toast.LENGTH_LONG).show();
                         if(reloadCount < 5) {
-                            loadInterstitial(adRe);
+                            new Handler().postDelayed(() ->  loadInterstitial(adRe), 2000);
                         }
                     }
                 });
